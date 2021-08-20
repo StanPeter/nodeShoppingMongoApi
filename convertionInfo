@@ -1,0 +1,5 @@
+project is being converted from SQL into nonSQL -> sequelize (mysql) into mongoose (mongoDB)
+
+database connection is no longer necessary since mongoose takes care of it -> deleted database.ts
+
+models will be rewritten of course as well as all methods Mongoose offers

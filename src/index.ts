@@ -1,12 +1,12 @@
 import express, { Application } from "express";
-import sequelizeConnection from "util/database";
 import path from "path";
 import dotenv from "dotenv";
 //routes
 import adminRoutes from "routes/admin";
 import shopRoutes from "routes/shop";
 import errorController from "controllers/error";
-import { mockDataPopulater, setRelations } from "util/dbHelper";
+
+import mongoose from "mongoose";
 
 //load enviroment variables
 dotenv.config();
@@ -30,16 +30,25 @@ app.use("/admin", adminRoutes); //with pre-index /admin
 app.use(shopRoutes);
 app.use(errorController);
 
-//set relations between tables
-setRelations();
-
 //self calling method to run server
 (async () => {
     try {
-        await sequelizeConnection.sync({ force: true });
+        const time1 = new Date().getTime();
 
-        //populates Tables with data -> sync is set to force: true which deletes them each reloading of the project
-        mockDataPopulater();
+        // local database connection
+        // mongoose.connect("mongodb://localhost:27017/test", {
+        //     useNewUrlParser: true,
+        //     useUnifiedTopology: true,
+        // });
+
+        await mongoose.connect(
+            `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ow0qg.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
+            { useNewUrlParser: true, useUnifiedTopology: true }
+        );
+
+        console.log((new Date().getTime() - time1) / 1000, "s Took this long");
+
+        console.log("connected");
 
         app.listen(port, () => console.log("Listening on " + port));
     } catch (e) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Product from "models/Product";
-import Cart from "models/Cart";
-import Order from "models/Order";
+// import Cart from "models/Cart";
+// import Order from "models/Order";
 
 export const getAddProduct = (_req: Request, res: Response) => {
     res.render("admin/edit-product", {
@@ -39,7 +39,7 @@ export const getEditProduct = async (req: Request, res: Response) => {
         return res.redirect("/");
     }
 
-    const product = await Product.findByPk(req.params.productId);
+    const product = await Product.findById(req.params.productId);
 
     if (!product) throw new Error("No product was found");
 
@@ -52,18 +52,14 @@ export const getEditProduct = async (req: Request, res: Response) => {
 };
 
 export const postEditProduct = async (req: Request, res: Response) => {
-    const prodId = req.body.productId;
+    const id = req.body.productId;
     const updatedTitle = req.body.title;
     const updatedPrice = req.body.price;
     const updatedImageUrl = req.body.imageUrl;
     const updatedDesc = req.body.description;
 
-    const updatedProduct = await Product.findByPk(prodId);
-
-    if (!updatedProduct) throw new Error("Product was not found");
-
     try {
-        await updatedProduct.update({
+        await Product.findByIdAndUpdate(id, {
             title: updatedTitle,
             price: updatedPrice,
             imageUrl: updatedImageUrl,
@@ -78,7 +74,7 @@ export const postEditProduct = async (req: Request, res: Response) => {
 };
 
 export const getProducts = async (_req: Request, res: Response) => {
-    const products = await Product.findAll({ where: { active: true } });
+    const products = await Product.find({ active: true });
 
     res.render("admin/products", {
         prods: products,
@@ -91,8 +87,7 @@ export const postDeleteProduct = async (req: Request, res: Response) => {
     const id = req.body.productId;
 
     try {
-        await Cart.destroy({ where: { productId: id } });
-        await Product.update({ active: false }, { where: { id } });
+        await Product.findByIdAndUpdate(id, { active: false });
 
         res.redirect("/admin/products");
     } catch (e) {

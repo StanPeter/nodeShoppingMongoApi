@@ -1,61 +1,40 @@
-import Sequelize, { Model } from "sequelize";
-import sequelizeConnection from "util/database";
+import { Schema, model } from "mongoose";
 
-//parameters are visible in auto-completing
-export interface ProductAttributes {
+export interface Product {
     id?: number;
     title: String;
-    price: number | String;
+    price: number;
     imageUrl?: String;
     description?: String;
     active?: Boolean; //whether its a deleted product or not (in orders we still want to see it even if its deleted!)
 }
 
-export default class Product extends Model<ProductAttributes> {
-    // access fields by User.userName
-    public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-    public title!: String;
-    public price!: number;
-    public imageUrl!: String;
-    public description!: String;
-    public active!: Boolean;
-
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-}
-
-Product.init(
-    {
-        id: {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            allowNull: false,
-            primaryKey: true,
-        },
-        title: {
-            type: Sequelize.STRING,
-            allowNull: false,
-        },
-        price: {
-            type: Sequelize.DOUBLE,
-            allowNull: false,
-        },
-        imageUrl: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
-        description: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
-        active: {
-            type: Sequelize.BOOLEAN,
-            defaultValue: true,
-        },
+const schema = new Schema<Product>({
+    // id: {
+    //     type: String,
+    //     required: true,
+    // },
+    title: {
+        type: String,
+        required: true,
     },
-    {
-        sequelize: sequelizeConnection,
-        tableName: "Products",
-    }
-);
+    price: {
+        type: Number,
+        required: true,
+    },
+    imageUrl: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+    },
+    active: {
+        type: String,
+        default: true,
+    },
+});
+
+const ProductModel = model<Product>("Product", schema);
+
+export default ProductModel;
