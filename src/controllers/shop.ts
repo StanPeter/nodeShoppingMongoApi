@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 //models
 import Product from "models/Product";
 // import Cart from "models/Cart";
-import User from "models/User";
+import User, { CartInterface } from "models/User";
 
 interface GetCartResponse {
     amount: Number;
@@ -104,82 +104,117 @@ export const postCart = async (
     }
 };
 
-// export const postCartDeleteProduct = async (
-//     req: Request,
-//     res: Response,
-//     _next: NextFunction
-// ) => {
-//     const cart = await Cart.findOne({
-//         where: { productId: req.body.productId, userId: 1 },
-//     });
+export const postCartDeleteProduct = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction
+) => {
+    try {
+        const user = await User.findOne({ userName: "Stan05" });
 
-//     if (!cart) throw new Error("No cart was found");
+        if (!user) throw new Error("No user was found");
 
-//     cart.destroy();
+        const newCartItems: Array<CartInterface> = user.cart.items.filter(
+            (item) => item.productId != req.body.productId
+        );
 
-//     res.redirect("/cart");
-// };
+        await user.updateOne({ cart: { items: newCartItems } });
 
-// export const getOrders = async (
-//     _req: Request,
-//     res: Response,
-//     _next: NextFunction
-// ) => {
-//     try {
-//         const user = await User.findByPk(1);
-//         if (!user) throw new Error("No user was found");
+        res.redirect("/cart");
+    } catch (e) {
+        console.log(e, "error");
+        throw new Error(e);
+    }
+};
 
-//         let response: Array<GetOrdersResponse> = [];
+interface GetOrdersResponse {
+    orderId: Number;
+    products: [
+        {
+            title: String;
+            amount: Number;
+        }
+    ];
+}
 
-//         const orders = await user.getOrders();
+export const getOrders = async (
+    _req: Request,
+    res: Response,
+    _next: NextFunction
+) => {
+    try {
+        const user = await User.findOne({ userName: "Stan05" });
+        if (!user) throw new Error("No user was found");
 
-//         for (const order of orders) {
-//             const foundProduct = await Product.findByPk(order.productId);
+        let response: Array<GetOrdersResponse> = [];
 
-//             const indexOfexistingOrder = response.findIndex(
-//                 (d) => d.orderId === order.orderId
-//             );
+        for (const order of user.orders.items) {
+            const foundProduct = await Product.findById(order.productId);
 
-//             if (indexOfexistingOrder !== -1) {
-//                 response[indexOfexistingOrder].products.push({
-//                     amount: order.amount,
-//                     title: foundProduct!.title,
-//                 });
-//             } else {
-//                 response.push({
-//                     orderId: order.orderId,
-//                     products: [
-//                         {
-//                             amount: order.amount,
-//                             title: foundProduct!.title,
-//                         },
-//                     ],
-//                 });
-//             }
-//         }
+            const indexOfexistingOrder = response.findIndex(
+                (d) => d.orderId === order.orderId
+            );
 
-//         res.render("shop/orders", {
-//             path: "/orders",
-//             pageTitle: "Your Orders",
-//             orders: response,
-//         });
-//     } catch (e) {
-//         console.log(e, "error");
-//         throw new Error(e);
-//     }
-// };
+            if (indexOfexistingOrder !== -1) {
+                //if doesn't exist
+                response[indexOfexistingOrder].products.push({
+                    amount: order.quantity,
+                    title: foundProduct!.title,
+                });
+            } else {
+                response.push({
+                    orderId: order.orderId!,
+                    products: [
+                        {
+                            amount: order.quantity,
+                            title: foundProduct!.title,
+                        },
+                    ],
+                });
+            }
+        }
 
-// export const getCheckout = (
-//     _req: Request,
-//     res: Response,
-//     _next: NextFunction
-// ) => {
-//     res.render("shop/checkout", {
-//         path: "/checkout",
-//         pageTitle: "Checkout",
-//     });
-// };
+        res.render("shop/orders", {
+            path: "/orders",
+            pageTitle: "Your Orders",
+            orders: response,
+        });
+    } catch (e) {
+        console.log(e, "error");
+        throw new Error(e);
+    }
+};
 
-// export const postOrder = async (_req: Request, _res: Response) => {
-//     alert("not implemnted yet");
-// };
+export const getCheckout = (
+    _req: Request,
+    res: Response,
+    _next: NextFunction
+) => {
+    res.render("shop/checkout", {
+        path: "/checkout",
+        pageTitle: "Checkout",
+    });
+};
+
+export const postOrder = async (_req: Request, res: Response) => {
+    try {
+        const user = await User.findOne({ userName: "Stan05" });
+
+        if (!user) throw new Error("user was not found");
+
+        const previousItems = user.cart.items;
+
+        await user.updateOne({
+            orders: {
+                items: previousItems,
+            },
+            cart: {
+                items: [],
+            },
+        });
+
+        res.redirect("/orders");
+    } catch (e) {
+        throw new Error(e);
+    }
+};

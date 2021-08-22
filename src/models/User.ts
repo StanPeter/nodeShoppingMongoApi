@@ -7,15 +7,20 @@ export interface CartInterface {
     quantity: Number;
 }
 
+export interface OrderInterface {
+    productId: String;
+    quantity: Number;
+    orderId?: Number;
+}
+
 // TS Interdace for the schema
 interface IUser {
     id?: any;
     userName: string;
     email: string;
     hashedPassword: string;
-    cart: {
-        items: Array<CartInterface>;
-    };
+    cart: { items: Array<CartInterface> };
+    orders: { items: Array<OrderInterface> };
 }
 
 // TS Methods for the schema
@@ -55,6 +60,25 @@ const UserSchema: Schema<IUserDocument> = new Schema({
                 quantity: {
                     type: Number,
                     default: 1,
+                },
+            },
+        ],
+    },
+    orders: {
+        items: [
+            {
+                productId: {
+                    type: Schema.Types.ObjectId,
+                    ref: "Product",
+                    required: true,
+                },
+                quantity: {
+                    type: Number,
+                    default: 1,
+                },
+                orderId: {
+                    type: Number,
+                    default: Math.floor(Math.random() * 1000000),
                 },
             },
         ],

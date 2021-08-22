@@ -56,6 +56,7 @@ app.use(errorController);
                 hashedPassword: await User.hashPassword("test"),
                 email: "test@gmail.com",
                 cart: [],
+                orders: [],
             });
 
         app.listen(port, () => console.log("Listening on " + port));
