@@ -2,23 +2,23 @@ import { NextFunction, Request, Response } from "express";
 //models
 import Product from "models/Product";
 // import Cart from "models/Cart";
-// import User from "models/User";
+import User from "models/User";
 
-// interface GetCardResponse {
-//     amount: number;
-//     title: String;
-//     id?: number;
-// }
+interface GetCartResponse {
+    amount: Number;
+    title: String;
+    id?: Number;
+}
 
-// interface GetOrdersResponse {
-//     orderId: number;
-//     products: [
-//         {
-//             title: String;
-//             amount: number;
-//         }
-//     ];
-// }
+interface GetOrdersResponse {
+    orderId: Number;
+    products: [
+        {
+            title: String;
+            amount: Number;
+        }
+    ];
+}
 
 export const getProducts = async (
     _req: Request,
@@ -51,71 +51,58 @@ export const getProduct = (
         .catch((err: string) => console.log(err));
 };
 
-// export const getCart = async (
-//     _req: Request,
-//     res: Response,
-//     _next: NextFunction
-// ) => {
-//     try {
-//         const user = await User.findByPk(1);
-//         if (!user) throw new Error("No user was found");
+export const getCart = async (
+    _req: Request,
+    res: Response,
+    _next: NextFunction
+) => {
+    try {
+        const user = await User.findOne({ userName: "Stan05" });
+        if (!user) throw new Error("No user was found");
 
-//         let response: Array<GetCardResponse> = [];
+        let response: Array<GetCartResponse> = [];
 
-//         const carts = await user.getCarts();
+        const carts = user.cart.items;
 
-//         for (const cart of carts) {
-//             //one way of doing it
-//             // const hey = await cart.getProducts();
-//             const foundProduct = await Product.findByPk(cart.productId);
+        for (const cart of carts) {
+            const foundProduct = await Product.findById(cart.productId);
 
-//             response.push({
-//                 amount: cart.amount,
-//                 title: foundProduct!.title,
-//                 id: foundProduct!.id,
-//             });
-//         }
+            response.push({
+                amount: cart.quantity,
+                title: foundProduct!.title,
+                id: foundProduct!.id,
+            });
+        }
 
-//         res.render("shop/cart", {
-//             path: "/cart",
-//             pageTitle: "Your Cart",
-//             products: response,
-//         });
-//     } catch (e) {
-//         console.log(e, "error");
-//         throw new Error(e);
-//     }
-// };
+        res.render("shop/cart", {
+            path: "/cart",
+            pageTitle: "Your Cart",
+            products: response,
+        });
+    } catch (e) {
+        console.log(e, "error");
+        throw new Error(e);
+    }
+};
 
-// export const postCart = async (
-//     req: Request,
-//     res: Response,
-//     _next: NextFunction
-// ) => {
-//     try {
-//         //check whether the same product already exists in user's Cart
-//         const existingCart = await Cart.findOne({
-//             where: { productId: req.body.productId, userId: 1 },
-//         });
+export const postCart = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction
+) => {
+    try {
+        const foundProduct = await Product.findById(req.body.productId);
+        const foundUser = await User.findOne({ userName: "Stan05" });
 
-//         if (existingCart) {
-//             existingCart.update({
-//                 // ...existingCart.toJSON(),
-//                 amount: ++existingCart.amount,
-//             });
-//         } else {
-//             Cart.create({
-//                 productId: req.body.productId,
-//                 userId: 1,
-//                 amount: 1,
-//             });
-//         }
+        if (foundProduct && foundUser) {
+            await foundUser.addToCart(foundProduct);
+        }
 
-//         res.redirect("/cart");
-//     } catch (e) {
-//         console.log(e, "error");
-//     }
-// };
+        res.redirect("/cart");
+    } catch (e) {
+        console.log(e, "error");
+    }
+};
 
 // export const postCartDeleteProduct = async (
 //     req: Request,

@@ -1,12 +1,12 @@
 import express from "express";
 
 import {
-    // getCart,
+    getCart,
     // getCheckout,
     // getOrders,
     getProduct,
     getProducts,
-    // postCart,
+    postCart,
     // postCartDeleteProduct,
     // postOrder,
 } from "controllers/shop";
@@ -19,9 +19,9 @@ router.get("/products", getProducts);
 
 router.get("/products/:productId", getProduct);
 
-// router.get("/cart", getCart);
+router.get("/cart", getCart);
 
-// router.post("/cart", postCart);
+router.post("/cart", postCart);
 
 // router.post("/cart-delete-item", postCartDeleteProduct);
 

@@ -1,12 +1,13 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import path from "path";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 //routes
 import adminRoutes from "routes/admin";
 import shopRoutes from "routes/shop";
 import errorController from "controllers/error";
-
-import mongoose from "mongoose";
+//models
+import User from "models/User";
 
 //load enviroment variables
 dotenv.config();
@@ -48,7 +49,14 @@ app.use(errorController);
 
         console.log((new Date().getTime() - time1) / 1000, "s Took this long");
 
-        console.log("connected");
+        const saveUser = await User.findOne({ userName: "Stan05" });
+        if (!saveUser)
+            await User.create({
+                userName: "Stan05",
+                hashedPassword: await User.hashPassword("test"),
+                email: "test@gmail.com",
+                cart: [],
+            });
 
         app.listen(port, () => console.log("Listening on " + port));
     } catch (e) {
