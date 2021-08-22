@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import Product from "models/Product";
-// import Cart from "models/Cart";
-// import Order from "models/Order";
 
 export const getAddProduct = (_req: Request, res: Response) => {
     res.render("admin/edit-product", {

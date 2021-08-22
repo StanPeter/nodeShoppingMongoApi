@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 //models
 import Product from "models/Product";
-// import Cart from "models/Cart";
 import User, { CartInterface } from "models/User";
 
 interface GetCartResponse {
